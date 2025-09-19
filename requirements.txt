@@ -1,0 +1,10 @@
+fyers-apiv3>=3.1.7
+pandas>=1.5.0
+numpy>=1.21.0
+ta-lib>=0.4.0
+python-dotenv>=0.19.0
+requests>=2.28.0
+websocket-client>=1.4.0
+schedule>=1.2.0
+logging
+datetime
