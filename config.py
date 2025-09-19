@@ -27,8 +27,13 @@ class Config:
     POSITION_SIZE_PERCENT = float(os.getenv('POSITION_SIZE_PERCENT', 0.1))
     
     DAILY_PROFIT_TARGET = float(os.getenv('DAILY_PROFIT_TARGET', 1000))  # ₹1000 daily target
+    DAILY_STOP_LOSS = float(os.getenv('DAILY_STOP_LOSS', 500))  # ₹500 daily stop loss
     AUTO_TRADING_ENABLED = os.getenv('AUTO_TRADING_ENABLED', 'true').lower() == 'true'
     FOCUS_SYMBOL = os.getenv('FOCUS_SYMBOL', 'NIFTY')  # Focus on NIFTY only
+    
+    MIN_WIN_RATE = float(os.getenv('MIN_WIN_RATE', 0.85))  # 85% minimum win rate
+    STRONG_SIGNAL_THRESHOLD = float(os.getenv('STRONG_SIGNAL_THRESHOLD', 80))  # 80% confidence minimum
+    ENHANCED_MODE = False  # Set to True for enhanced strategy
     
     EMA_PERIOD_SHORT = int(os.getenv('EMA_PERIOD_SHORT', 9))
     EMA_PERIOD_LONG = int(os.getenv('EMA_PERIOD_LONG', 21))

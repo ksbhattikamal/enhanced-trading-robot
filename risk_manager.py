@@ -13,7 +13,9 @@ class RiskManager:
         self.positions = {}
         self.trade_history = []
         self.daily_profit_target = getattr(config, 'DAILY_PROFIT_TARGET', 1000)
+        self.daily_stop_loss = getattr(config, 'DAILY_STOP_LOSS', 500)
         self.profit_target_reached = False
+        self.stop_loss_hit = False
     
     def check_risk_limits(self, signal: Dict, account_balance: float) -> Dict[str, any]:
         """Check if trade passes risk management rules"""
@@ -28,6 +30,12 @@ class RiskManager:
             risk_check['approved'] = False
             self.profit_target_reached = True
             risk_check['reasons'].append(f'Daily profit target of ₹{self.daily_profit_target} reached (Current: ₹{self.daily_pnl:.2f})')
+            return risk_check
+        
+        if self.stop_loss_hit or self.daily_pnl <= -self.daily_stop_loss:
+            risk_check['approved'] = False
+            self.stop_loss_hit = True
+            risk_check['reasons'].append(f'Daily stop loss of ₹{self.daily_stop_loss} hit (Current: ₹{self.daily_pnl:.2f})')
             return risk_check
         
         if self.daily_pnl <= -account_balance * self.config.MAX_DAILY_LOSS:
@@ -191,6 +199,15 @@ class RiskManager:
         if self.daily_pnl >= self.daily_profit_target:
             self.profit_target_reached = True
             self.logger.info(f"🎯 Daily profit target of ₹{self.daily_profit_target} reached! Current P&L: ₹{self.daily_pnl:.2f}")
+        
+        if self.daily_pnl <= -self.daily_stop_loss:
+            self.stop_loss_hit = True
+            self.logger.warning(f"🛑 Daily stop loss of ₹{self.daily_stop_loss} hit! Current P&L: ₹{self.daily_pnl:.2f}")
+        
+        if final_pnl > 0:
+            self.winning_trades = getattr(self, 'winning_trades', 0) + 1
+        else:
+            self.losing_trades = getattr(self, 'losing_trades', 0) + 1
     
     def should_continue_trading(self) -> Dict[str, any]:
         """Check if trading should continue based on profit targets and risk limits"""
@@ -202,9 +219,9 @@ class RiskManager:
             continue_trading = False
             reasons.append(f'Daily profit target of ₹{self.daily_profit_target} reached')
         
-        if self.daily_pnl <= -self.daily_profit_target * 0.5:  # Stop if loss is 50% of target
+        if self.stop_loss_hit or self.daily_pnl <= -self.daily_stop_loss:
             continue_trading = False
-            reasons.append(f'Daily loss limit reached (₹{self.daily_pnl:.2f})')
+            reasons.append(f'Daily stop loss of ₹{self.daily_stop_loss} hit (₹{self.daily_pnl:.2f})')
         
         if self.daily_trades >= self.max_daily_trades:
             continue_trading = False
@@ -214,6 +231,7 @@ class RiskManager:
             'continue': continue_trading,
             'current_pnl': self.daily_pnl,
             'target': self.daily_profit_target,
+            'stop_loss': self.daily_stop_loss,
             'progress': (self.daily_pnl / self.daily_profit_target * 100) if self.daily_profit_target > 0 else 0,
             'reasons': reasons
         }
@@ -245,6 +263,10 @@ class RiskManager:
         
         self.daily_pnl = 0
         self.daily_trades = 0
+        self.profit_target_reached = False
+        self.stop_loss_hit = False
+        self.winning_trades = 0
+        self.losing_trades = 0
         
         yesterday = datetime.now().date() - timedelta(days=1)
         yesterday_trades = [t for t in self.trade_history 

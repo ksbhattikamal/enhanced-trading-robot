@@ -11,13 +11,18 @@ from config import Config
 from fyers_client import FyersClient
 from technical_analysis import TechnicalAnalysis
 from strategy import TradingStrategy
+from enhanced_strategy import EnhancedTradingStrategy
 from risk_manager import RiskManager
 
 class TradingRobot:
     def __init__(self):
         self.config = Config()
         self.fyers_client = FyersClient()
-        self.strategy = TradingStrategy()
+        self.enhanced_mode = getattr(self.config, 'ENHANCED_MODE', False)
+        if self.enhanced_mode:
+            self.strategy = EnhancedTradingStrategy()
+        else:
+            self.strategy = TradingStrategy()
         self.risk_manager = RiskManager(self.config)
         self.logger = self._setup_logger()
         
@@ -280,10 +285,24 @@ class TradingRobot:
 
 def main():
     """Main entry point"""
+    import argparse
     
-    demo_mode = '--demo' in sys.argv
+    parser = argparse.ArgumentParser(description='Fyers Trading Robot')
+    parser.add_argument('--demo', action='store_true', help='Run in demo mode (no actual trades)')
+    parser.add_argument('--enhanced', action='store_true', help='Use enhanced high-probability strategy')
+    parser.add_argument('--symbol', type=str, choices=['NIFTY', 'BANKNIFTY', 'FINNIFTY', 'ALL'], 
+                       default='ALL', help='Symbol to trade')
     
-    if demo_mode:
+    args = parser.parse_args()
+    
+    config = Config()
+    if args.enhanced:
+        config.ENHANCED_MODE = True
+        print("🚀 Enhanced high-probability trading mode enabled")
+        print(f"🎯 Daily profit target: ₹{config.DAILY_PROFIT_TARGET}")
+        print(f"🛑 Daily stop loss: ₹{config.DAILY_STOP_LOSS}")
+    
+    if args.demo:
         print("Running in DEMO mode - no actual trades will be placed")
     
     robot = TradingRobot()
