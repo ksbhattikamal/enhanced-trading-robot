@@ -231,7 +231,7 @@ class TradingStrategy:
                 continue
 
             expiry = self._get_nearest_expiry()
-n            if ':' in symbol:
+            if ':' in symbol:
                 base_symbol = symbol.split(':')[1].replace('-INDEX', '')
             else:
                 base_symbol = symbol.replace('-INDEX', '')
