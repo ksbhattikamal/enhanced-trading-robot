@@ -15,9 +15,20 @@ class Config:
         'FINNIFTY': 'NSE:FINNIFTY-INDEX'
     }
     
+    FOCUSED_SYMBOLS = {
+        'NIFTY': ['NSE:NIFTY50-INDEX'],
+        'BANKNIFTY': ['NSE:NIFTYBANK-INDEX'], 
+        'FINNIFTY': ['NSE:FINNIFTY-INDEX'],
+        'ALL': ['NSE:NIFTY50-INDEX', 'NSE:NIFTYBANK-INDEX', 'NSE:FINNIFTY-INDEX']
+    }
+    
     MAX_RISK_PER_TRADE = float(os.getenv('MAX_RISK_PER_TRADE', 0.02))
     MAX_DAILY_LOSS = float(os.getenv('MAX_DAILY_LOSS', 0.05))
     POSITION_SIZE_PERCENT = float(os.getenv('POSITION_SIZE_PERCENT', 0.1))
+    
+    DAILY_PROFIT_TARGET = float(os.getenv('DAILY_PROFIT_TARGET', 1000))  # ₹1000 daily target
+    AUTO_TRADING_ENABLED = os.getenv('AUTO_TRADING_ENABLED', 'true').lower() == 'true'
+    FOCUS_SYMBOL = os.getenv('FOCUS_SYMBOL', 'NIFTY')  # Focus on NIFTY only
     
     EMA_PERIOD_SHORT = int(os.getenv('EMA_PERIOD_SHORT', 9))
     EMA_PERIOD_LONG = int(os.getenv('EMA_PERIOD_LONG', 21))
